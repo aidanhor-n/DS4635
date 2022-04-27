@@ -1,0 +1,284 @@
+---
+title: "DS 4635 Homework 1"
+author: "Aidan Horn"
+date: "3/21/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section 2.4, page 52, question 1
+
+1. For each of parts (a) through (d), indicate whether we would generally expect the performance of a flexible statistical learning method to be
+better or worse than an inflexible method. Justify your answer.
+
+(a) The sample size n is extremely large, and the number of predictors p is small.
+
+- **With a large sample size and a small number of predictors, we can expect that a more flexible statistical model will perform better. A lower number of predictors means that a flexbile model can better capture a trend by incorporating more functions without overfitting a small number of observations.**
+
+(b) The number of predictors p is extremely large, and the number of observations n is small.
+
+- **A flexible model will perform worse when p is large and n is small since a flexible model will tend to overfit a small number of samples, producing a high testing MSE despite a low training MSE**
+
+(c) The relationship between the predictors and response is highly non-linear.
+
+- **A flexible model may incorporate non-linear transofrmations of the data into the model making it much better at fitting to non-linear relationships than an inflexible model**
+
+(d) The variance of the error terms, i.e. σ2 = Var(ϵ), is extremely high.
+
+- **An inflexible model would perform better than a flexible model since a high variance would indicate that there is not enough correlation between the data to make complicated inferences with much accuracy. It would be better to use an inflexible, linear fit to capture the most basic trends.**
+
+## Section 2.4, page 53, question 2
+
+(a) We collect a set of data on the top 500 firms in the US. For each firm we record profit, number of employees, industry and the CEO salary. We are interested in understanding which factors affect CEO salary
+
+- **In this case, since we want to understand how much different inputs affect an outcome (CEO Salary) we would use regression. This is an inference problem since we want to understand the relationships within the given dataset, not make predictions about new data. Sample size, n, is 500. Number of predictors, p, is 3.**
+
+(b) We are considering launching a new product and wish to know whether it will be a success or a failure. We collect data on 20 similar products that were previously launched. For each product we have recorded whether it was a success or failure, price charged for the product, marketing budget, competition price, and ten other variables.
+
+- **In this case, since we want to categorize products as successes or failures, we would define this as a classification problem and obviously since we want to predict which category a new product will fall into, we are most interested in prediction. The sample size, n, is 20. The number of predictors, p, is 14.**
+
+(c) We are interested in predicting the % change in the USD/Euro exchange rate in relation to the weekly changes in the world stock markets. Hence we collect weekly data for all of 2012. For each week we record the % change in the USD/Euro, the % change in the US market, the % change in the British market, and the % change in the German market.
+
+- **This is a regression problem because it concerns predicting percentage change from past inputs. We are interested in prediction in this case. The sample size, n, is 52 (weeks in 2012). The number of predictors, p, is 4.**
+
+## Section 2.4, page 53, question 5
+
+What are the advantages and disadvantages of a very flexible (versus a less flexible) approach for regression or classification? Under what circumstances might a more flexible approach be preferred to a less flexible approach? When might a less flexible approach be preferred?
+
+- **A very flexible approach has the advantage of incorporating a number of different functions to better fit the data, which is especially useful for non-linear descision boundaries and relationships However, with a small number of samples, a flexible model will likely overfit the data and may be more computationally expensive to update the model as new data are added. Finally, the higher variability of the model (as shown in the bias-variance tradeoff) of the model may make interpretablity difficult, but will better conform to non-uniformity (low bias)**
+
+- **A less flexible approach is prefered when the number of samples is low with respect to the number of predictors, as a less flexible model is less likely to overfit. THe bias-variance tradeoff demonstrates that a less flexible model will have a lower variance, and therefore higher degree of interpretablity, however it will also have a larger bias, which will negativly skew accuracy for non-uniform data**
+
+## Section 2.4, page 54-55, question 8
+
+**(a) using the ISLR library to load College data**
+```{r College}
+library(ISLR)
+college = College
+```
+**(b) using the ISLR library to load College data**
+
+```{r college View}
+
+#rownames(college) = college[, 1]
+
+#View(college)
+
+```
+**(c)**
+**(i) summary **
+  
+```{r collecge summary}
+
+summary(college)
+
+```
+**(ii) pairplot of first ten columns **
+
+``` {r college pairs}
+
+pairs(college[,1:10])
+
+```
+
+**(iii) plot boxplots of outstate versus private**
+  
+```{r college boxplot}
+
+private = as.factor(college[,"Private"])
+
+plot(private, college[,"Outstate"])
+
+
+```
+
+**(iv) binning Top10perc to create a new variable, Elite, based on the proportion of top 10% students**
+
+``` {r college elite binning}
+
+Elite = rep("No", nrow(college))
+Elite[college[,"Top10perc"] > 50] = "Yes"
+Elite = as.factor(Elite)
+college = data.frame(college, Elite)
+
+summary(Elite)
+plot(Elite, college[,"Outstate"])
+```
+
+**(v) histograms of quantitative variables in college dataset**
+
+``` {r college histograms}
+
+college.numeric = college[,sapply(college, is.numeric)]
+
+invisible(lapply(seq(college.numeric),function(x)
+  hist(x = college.numeric[[x]], xlab = names(college.numeric)[x], main = paste("Histogram of", names(college.numeric)[x]))))
+```
+
+**(vi) data exploration: finding the most above average colleges**
+
+**we will attempt to uncover the best colleges for out of state students using some of the features available**
+
+``` {r college data exploration}
+GV = rep(1, nrow(college)) 
+
+GV[college[,"Outstate"] < mean(college[,"Outstate"])] = GV[college[,"Outstate"] < mean(college[,"Outstate"])] + 1
+
+GV[college[,"S.F.Ratio"] < mean(college[,"S.F.Ratio"])] = GV[college[,"S.F.Ratio"] < mean(college[,"S.F.Ratio"])] + 1
+
+GV[college[,"Grad.Rate"] > mean(college[,"Grad.Rate"])] = GV[college[,"Grad.Rate"] > mean(college[,"Grad.Rate"])] + 1
+
+GV[college[,"PhD"] > mean(college[,"PhD"])] = GV[college[,"PhD"] > mean(college[,"PhD"])] + 1
+
+GV = as.factor(GV)
+
+college = data.frame(college, GV)
+
+expend = college[college$GV == 5,]$Expend
+
+names = college[college$GV == 5,]$Name
+
+#for (x in rank(-expend))
+  #print(names[x])
+
+```
+
+1. "Virginia Tech"
+2. "Florida International University"
+3. "LaGrange College"
+4. "University of Florida"
+5. "University of Wisconsin at Madison"
+6. "Lenoir-Rhyne College"
+7. "New Jersey Institute of Technology"
+8. "University of North Carolina at Chapel Hill"
+9. "Drury College"
+10. "Centenary College of Louisiana"
+11. "Bellarmine College"
+12. "Emory & Henry College"
+13. "Meredith College"
+
+**While these colleges might not have the name recognition of other schools, they are better than average in four key metrics: cheaper outstate tuition, lower student to faculty ratio, higher graduation rate, and a higher number of PhD faculty members. Additionally, these colleges have themselves been ranked by the amount spent per student, with Virginia tech coming in first**
+
+
+## Section 2.4, page 56-57, question 10
+
+**(a) Load the boston dataset**
+``` {r boston load, message = FALSE, warning = FALSE}
+
+library(ISLR2)
+
+boston = Boston
+
+?Boston
+
+```
+
+**A data frame with 506 rows and 13 variables. Rows represent suburbs of Boston, columns represent features of each suburb such as crime rate and nitrogen oxide concentration**
+
+**(b) Pairwise scatterplots**
+```{r boston pairwise plots}
+
+pairs(Boston[,sample(names(Boston),10)])
+
+```
+
+**looking at pairplots of the Boston data, we see a number of possible correlations. Some are obvious such as the positive correlation between the number of rooms per dwelling (rm) and the median value of homes (medv). The concentration of nitrogen oxides (nox) has interesting correlations with distance from Boston (dis) (negative) and the proportion of owner-occupied units built prior to 1940 (age) (positive) indicating that neighborhoods closer to Boston have a higher nitrogen oxide concentration and also tend to be older. Lower status individuals tend to reside closer to Boston, and they areas in which they live tend to have higher pupil to teacher ratios.**
+
+**(C) Are any of the predictors associated with per capita crime rates?**
+
+``` {r boston per capita crime rates}
+
+#par(mfrow = c(3,4))
+
+for (n in names(Boston)[-1])
+  plot(Boston[,n],Boston[,"crim"],xlab = n, ylab = "crim", main = paste(n,"versus crim"))
+
+```
+
+**Analyzing the relationships between per capita crime rate and the other factors, some interesting observations emerge. Crime rate is noticably higher in denser, industrialized towns as shown by zn and indus, though with indus, towns with a industrialization higher than a certain threshold of non-retail business acres, the crime rate drops dramatically. Older neighborhoods have a higher crime rate, as do neighborhoods closer to Boston. There appears to be a positive correlation between the percentage of lower status individuals and crime rate, as well negative correlation between the median home value and the crime rate.**
+
+**(d) Do any of the census tracts of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.**
+
+```{r boston data ranges}
+
+outliers = c()
+
+for (n in names(Boston)){
+  out = boxplot.stats(Boston[,n])$out
+  out_ind = which(Boston[,n] %in% c(out))
+  outliers = c(outliers, out_ind)
+  boxplot(Boston[,n],ylab = n, xlab = paste(length(out),"outliers detected"))
+}
+
+sort(table(outliers), decreasing = TRUE)[1:12]
+
+````
+
+- **Using a common IQR criterion and a visual analysis of the boxplot, we can see that more than 10% of the total census tracts have a noticably high crime rate.** 
+- **Tax rates do not have any outliers, but the data appears extremely multimodal, with many having a low tax rate, and many having a very high tax rate.**
+
+- **Pupil teacher ratios are high on average with some very low outliers.**
+
+- **for predictors like crim, zn, dis, lstat, and medv the range is skewed high by outliers. Likewise, rm, rad, and ptratio are skewed low.**
+
+**(e) How many of the census tracts bound the Charles river?**
+
+```{r boston charles river}
+
+chas = as.factor(Boston$chas)
+summary(chas)
+
+```
+
+**35 census tracts bound the Charles River**
+
+**(f) What is the median pupil-teacher ratio among the towns in this data set?**
+
+```{r boston median ptratio}
+
+summary(Boston$ptratio)
+
+```
+
+**The median pupil-teacher ratio is 19.05**
+
+**(g) Which census tract of Boston has lowest median value of owneroccupied homes? What are the values of the other predictors for that census tract, and how do those values compare to the overall ranges for those predictors? Comment on your findings.**
+
+```{r boston lowest median value}
+
+m = min(Boston$medv)
+
+lowest = which(Boston$medv %in% c(m))
+
+summary(Boston[lowest,])
+
+```
+
+**The lowest median value of owner-occupied homes in the dataset is 5 ($5000), there are two census tracts that have this value. These two neighbourhoods have higher average crime rates, proportions of pre-1940s homes, and proportion of lower status individuals. They belong to a common cohort of census tracts with similar industrial zoning, nitrogen oxide concentration, index of accecibility to radial highways, property tax, and pupil-teacher ratio. This data indicates that property tax values do not correlate with property values, where the lowest priced homes in high crime areas are still paying the highest property taxes** 
+
+**(h) In this data set, how many of the census tracts average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the census tracts that average more than eight rooms per dwelling.**
+
+```{r boston rm}
+attach(boston)
+
+seven = Boston[Boston$rm > 7, ]
+nrow(seven)
+
+eight = Boston[Boston$rm > 8, ]
+nrow(eight)
+#summary(eight)
+
+rm8 = rep("No", nrow(boston))
+rm8[boston[,"rm"] > 8] = "Yes"
+rm8 = as.factor(rm8)
+boston = data.frame(boston, rm8)
+
+for (n in names(Boston)){
+  plot(boston$rm8,boston[,n], xlab = "Average number of rooms greater than 8", ylab = n)
+}
+```
+
+**There are 64 with an average of more than 7 and 13 with an average of more than 8. We can see how this subset compares to the complete dataset using the above boxplots. For example, census tracts in this subset are less industrialized, have a lower pupil-teacher ratio, have a lower population of lower status individuals, and have higher median home values.**

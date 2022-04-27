@@ -1,0 +1,326 @@
+---
+title: "HW2"
+author: "Aidan Horn"
+date: "3/30/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section 3.7, page 120, question 3
+
+3. Suppose we have a data set with five predictors, X1 = GPA, X2 = IQ, X3 = Level (1 for College and 0 for High School), X4 = Interaction between GPA and IQ, and X5 = Interaction between GPA and Level. The response is starting salary after graduation (in thousands of dollars). Suppose we use least squares to fit the model, and get βˆ0 = 50, βˆ1 = 20, βˆ2 = 0.07, βˆ3 = 35, βˆ4 = 0.01, βˆ5 = −10.
+
+(a) Which answer is correct, and why?
+
+- i.  For a fixed value of IQ and GPA, high school graduates earnmore, on average, than college graduates.
+- ii. For a fixed value of IQ and GPA, college graduates earn more, on average, than high school graduates
+- iii.  For a fixed value of IQ and GPA, high school graduates earn more, on average, than college graduates provided that the GPA is high enough.
+- iv.  For a fixed value of IQ and GPA, college graduates earn more, on average, than high school graduates provided that the GPA is high enough.
+
+**The regression line is given by**
+$$yˆ = 50 + 20GPA + 0.07IQ + 35Level + 0.01GPA × IQ - 10GPA × Level$$
+**fixing IQ and GPA, for a highschool graduate, the regression line is**
+$$yˆ_0 = 50 + 20GPA + 0.07IQ + 0.01GPA × IQ$$
+**and for a college graduate, the regression line is**
+$$yˆ_1 = 85 + 10GPA + 0.07IQ + 0.01GPA × IQ$$
+**The starting salary for college graduate is higher if** $yˆ_1 > yˆ_0$ **. Substituting and simplifying we get ** $85 + 10GPA > 50 + 20GPA$ **which is equivalent to ** $GPA < 3.5$ **so college graduates only earn more with IQ and GPA fixed if GPA is less than 3.5, therefore statement iii is true**
+
+## Section 3.7, page 121, question 5
+
+5. Consider the fitted values that result from performing linear regression without an intercept.In this setting, the i-th fitted value takes the form $\hat{y_i} = x_i\hat{\beta}$, where $$\hat{\beta} = \frac{\sum_{i=1}^n x_iy_i}{\sum_{i'=1}^nx_{i'}^2}$$ Show that we can write $$\hat{y}_i = \sum_{i'=1}^na_{i'}y_{i'}$$
+
+**By substitution**
+$$\hat{y}_i = x_i\frac{\sum_{i=1}^n x_iy_i}{\sum_{i'=1}^nx_{i'}^2}$$
+**since xi does not depend on xi', the sumation with respect to i' can be treated as a constant. Therefore we can factorize yi as the dividend of the i' summation, and write it in terms of i'**
+$$= \sum_{i'=1}^n\frac{x_ix_{i'}}{\sum_{i'=1}^nx_{i'}^2}y_{i'}$$ 
+**Finally we subsitute the fraction in the summation for ai' and we get our original formula** 
+$$= \sum_{i=1}^na_{i'}y_{i'}$$
+**Therefore**
+$$ a_{i'} = \frac{x_ix_{i'}}{\sum_{i'=1}^nx_{i'}^2}$$
+
+## Section 3.7, page 121, question 6
+
+6. Using (3.4), argue that in the case of simple linear regression, the least squares line always passes through the point (¯x, y¯)
+
+**The equation for the regression line is ** $y =  β_0 + β_1x$
+**Using the equation for (3.4)** $β^ˆ0 = ¯y − β^ˆ1¯x, ¯x = -(βˆ0 - ¯y)/βˆ1$
+**If we substitute ¯x for x, we get y = B0 + B1¯x, the B1 terms cancel out so we are left with : y = B0 – (B0 - ¯y) which simplifies to y = ¯y. Therefore, we know ¯x, ¯y is on the regression line**
+
+## Section 3.7, page 121, question 13 (do part (j) using cross-validation)
+
+13.  In this exercise you will create some simulated data and will fit simple linear regression models to it. Make sure to use set.seed(1) prior to starting part (a) to ensure consistent results.
+
+(a) Using the rnorm() function, create a vector, x, containing 100 observations drawn from a N(0, 1) distribution. This represents a feature, X.
+```{r normal vector}
+
+set.seed(1)
+
+x = rnorm(100)
+
+```
+
+(b) using the rnorm() function, create a vector, eps, containing 100
+observations drawn from a N(0, 0.25) distribution—a normal
+distribution with mean zero and variance 0.25.
+```{r eps}
+
+eps = rnorm(100, sd = sqrt(0.25))
+
+```
+
+(c) Using x and eps, generate a vector y according to the model
+
+$$Y = -1 + 0.5X + ε$$
+What is the length of the vector “y” ? What are the values of β0 and β1 in this linear model ?
+
+```{r vector y}
+
+y = -1 + 0.5 * x + eps
+
+length(y)
+```
+
+**The values of Beta 0 and Beta 1 are -1 and 0.5.**
+
+(d) Create a scatterplot displaying the relationship between “x” and “y”. Comment on what you observe.
+
+```{r plot x y}
+
+plot(x,y)
+
+```
+
+**The relationship between x and y looks linear with some noise from the epsilon variable**
+
+(e) Fit a least squares linear model to predict “y” using “x”. Comment on the model obtained. How do β^0 and β^1 compare to β0 and β1 ?
+
+```{r lm}
+
+fit = lm(y ~ x)
+summary(fit)
+
+```
+
+**the estimates for β^0 and β^1 are very close to the real values, and the p value is below the threshold (alpha = 0.05) so we are confident in rejecting the null hypothesis.**
+
+(f) Display the least squares line on the scatterplot obtained in d. Draw the population regression line on the plot, in a different color. Use the legend() function to create an appropriate legend.
+
+```{r lm and plot}
+plot(x,y)
+abline(fit, col = "red")
+abline(-1, 0.5, col = "blue")
+legend("topleft", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+
+```
+(g) Now fit a polynomial regression model that predicts “y” using “x” and “x^2”. Is there evidence that the quadratic term improves the model fit ? Explain your answer.
+```{r fit 2}
+fit2 <- lm(y ~ x + I(x^2))
+summary(fit2)
+```
+**The x^2 coefficient is not significant as its p-value is larger than the alpha of 0.05. There is not sufficient evidence that the quadratic term improves the model fit, even though the R squared is slightly better**
+
+(h) Repeat (a)-(f) after modifying the data generation process in such a way that there is less noise in the data. The initial model should remain the same. Describe your results.
+
+```{r less noise}
+
+set.seed(1)
+eps = rnorm(100, sd = 0.1)
+x = rnorm(100)
+y = -1 + 0.5 * x + eps
+plot(x,y)
+fit3 = lm(y ~ x)
+abline(fit3, col = "red")
+abline(-1, 0.5, col = "blue")
+legend("topleft", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+summary(fit3)
+```
+**The data is less noisy since we reduced the standard deviation (i.e. the spread of the distribution) of the error term. The r squared, the proportion of variance explained by x, is nealy 100%, and the regression line and least square line are nealy identical**
+
+(i) Repeat (a)-(f) after modifying the data generation process in such a way that there is more noise in the data. The initial model should remain the same. Describe your results.
+
+```{r more noise}
+
+set.seed(1)
+eps = rnorm(100, sd = 1)
+x = rnorm(100)
+y = -1 + 0.5 * x + eps
+plot(x,y)
+fit4 = lm(y ~ x)
+abline(fit4, col = "red")
+abline(-1, 0.5, col = "blue")
+legend("topleft", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+summary(fit4)
+```
+
+**We increased the noise by increasing the variance of the normal distribution used to generate the error term. We may see that the coefficients are again very close to the previous ones, but now, as the relationship is not quite linear, we have a much lower R2 and much higher RSE. Moreover, the two lines are wider apart but are still really close to each other as we have a fairly large data set.**
+
+(j) What are the confidence intervals for β0 and β1 based on the original data set, the noisier data set, and the less noisy data set ? Comment on your results.
+
+**Original**
+```{r cross validation orignal}
+x = rnorm(100)
+eps = rnorm(100, sd = sqrt(0.25))
+y = -1 + 0.5 * x + eps
+
+origFit = lm(y ~ x)
+plot(x,y)
+abline(origFit)
+
+beta0 = NULL
+beta1 = NULL
+
+# Bootstrap
+for(i in 1:1000) {
+  mySample = sample(length(x),length(x),replace=TRUE)
+  myFit = lm(y[mySample] ~ x[mySample])
+  abline(myFit,col = rgb(0,1,0,0.02))
+  beta0[i] = coef(myFit)[1]
+  beta1[i] = coef(myFit)[2]
+}
+
+
+quantile(beta0, prob=c(0.025, 0.975))
+quantile(beta1, prob=c(0.025, 0.975))
+```
+
+**noisier data**
+```{r cross validation noise}
+x = rnorm(100)
+eps = rnorm(100, sd = 1)
+y = -1 + 0.5 * x + eps
+
+origFit = lm(y ~ x)
+plot(x,y)
+abline(origFit)
+
+beta0 = NULL
+beta1 = NULL
+
+# Bootstrap
+for(i in 1:1000) {
+  mySample = sample(length(x),length(x),replace=TRUE)
+  myFit = lm(y[mySample] ~ x[mySample])
+  abline(myFit,col = rgb(0,1,0,0.02))
+  beta0[i] = coef(myFit)[1]
+  beta1[i] = coef(myFit)[2]
+}
+
+
+quantile(beta0, prob=c(0.025, 0.975))
+quantile(beta1, prob=c(0.025, 0.975))
+```
+
+**less noisy data**
+
+```{r cross validation less noise}
+x = rnorm(100)
+eps = rnorm(100, sd = 0.1)
+y = -1 + 0.5 * x + eps
+
+origFit = lm(y ~ x)
+plot(x,y)
+abline(origFit)
+
+beta0 = NULL
+beta1 = NULL
+
+# Bootstrap
+for(i in 1:1000) {
+  mySample = sample(length(x),length(x),replace=TRUE)
+  myFit = lm(y[mySample] ~ x[mySample])
+  abline(myFit,col = rgb(0,1,0,0.02))
+  beta0[i] = coef(myFit)[1]
+  beta1[i] = coef(myFit)[2]
+}
+
+
+quantile(beta0, prob=c(0.025, 0.975))
+quantile(beta1, prob=c(0.025, 0.975))
+```
+
+**These confidence intervals conform with our expectation, as the data gets noisier, the confidence interval grows, while as it becomes less noisy, the confidence interval is narrower. The intervals are still centered on the true values of beta 0 and beta 1, but are less predicatble as the noise increases.**
+
+## Section 3.7, page 126, question 15 part a and d
+
+15. This problem involves the Boston data set, which we saw in the lab for this chapter. We will now try to predict per capita crime rate using the other variables in this data set. In other words, per capita crime rate is the response, and the other variables are the predictors.
+
+(a) For each predictor, fit a simple linear regression model to predict the response. Describe your results. In which of the models is there a statistically significant association between the predictor and the response? Create some plots to back up your assertions.
+
+```{r Boston predictors, warning = FALSE}
+
+Boston = MASS::Boston
+Boston$chas = as.factor(Boston$chas)
+
+r2 = c()
+p_value = c()
+
+y = Boston$crim
+
+for (i in 2:ncol(Boston)) {
+  
+  x = Boston[ ,i]
+  
+  m = lm(y ~ x)
+  
+  plot(x,y, xlab = names(Boston)[i], ylab = "crim")
+  abline(m, col = "red")
+  
+  r2[i] = summary(m)$r.squared
+  p_value[i] = summary(m)$coefficients[2,4]
+  
+}
+
+preds = data.frame(feature = names(Boston),
+                   R2 = round(r2, 5),
+                   P_value = round(p_value, 10))
+
+preds
+
+```
+
+**By hypothesis testing the significance of the predictors, using an alpha of 0.05, we can see that all predictors excel "chas" have a low enough p value that we can reject the null hypothesis and conclude statistical significance between the predictor and the response**
+
+(d)  Is there evidence of non-linear association between any of the predictors and the response? To answer this question, for each predictor X, fit a model of the form $$Y = β_0 + β_1X + β_2X^2 + β_3X^3 + ϵ.$$
+
+``` {r non linear}
+
+r2 = c()
+p_value_x = c()
+p_value_x2 = c()
+p_value_x3 = c()
+
+y = Boston$crim
+
+for (i in 2:ncol(Boston)) {
+  
+  x = Boston[ ,i]
+  if(is.numeric(x)){
+      nl = lm(y ~ x + I(x^2) + I(x^3))
+      
+      r2[i] = summary(nl)$r.squared
+      p_value_x[i] = summary(nl)$coefficients[2,4]
+      p_value_x2[i] = summary(nl)$coefficients[3,4]
+      p_value_x3[i] = summary(nl)$coefficients[4,4]
+    
+  }
+
+  
+}
+
+preds = data.frame(feature = names(Boston),
+                   R2 = round(r2, 5),
+                   P_value_x = round(p_value_x, 10),
+                   P_value_x2 = round(p_value_x2, 10),
+                   P_value_x3 = round(p_value_x3, 10))
+
+preds
+
+
+
+
+```
+
+**When we increase the flexibility of the model, we see that many predictors we thought significant are no longer useful, such as rm, rad, tax, black, and lstat. Some predictors show evidence that there is a nonlinear association with the response, like medv, nox, dis, indus, age, and ptratio. Finally, zn seems to maintain a linear relationship.** 
